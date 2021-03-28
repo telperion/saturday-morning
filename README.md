@@ -7,18 +7,20 @@ Saturday Morning Steppin': StepMania simfile injector for Friday Night Funkin'
 But it might make it easier for you to *create* new mods and share them!
 
 ## How to use!
+1. **Close Friday Night Funkin' before you begin replacing data.**
 1. Download the release and unzip to a directory of your choice.
-2. Drag-and-drop a StepMania song folder onto SaturdayMorning.exe.
-3. Select the location of Funkin.exe in your Friday Night Funkin' install.
-4. Select the Friday Night Funkin' song to replace the files for.
-  - Don't worry, the program will make a backup copy of your FNF install's
-    song data the first time you run it (in a `_backup` folder).
-5. Choose which charts are played by you and your opponent for each
+1. Drag-and-drop a StepMania song folder onto SaturdayMorning.exe.
+1. Select the location of Funkin.exe in your Friday Night Funkin' install.
+1. Select the Friday Night Funkin' song to replace the files for.
+   - Don't worry, the program will make a backup copy of your FNF install's
+     song data the first time you run it (in a `_backup` folder).
+1. Choose which charts are played by you and your opponent for each
    difficulty of the song.
-6. Set your desired reading speed.
-  - (2.0 is probably fine...y'all short reaction time havers)
-7. Press **Go!** when you're ready. If no errors pop up, you're done!
-8. Restart Friday Night Funkin' and enjoy.
+1. Set your desired reading speed.
+   - (2.0 is probably fine...y'all short reaction time havers)
+1. Press **Go!** when you're ready.
+1. If no errors pop up, you're done! You can continue to inject simfile data
+   or restart Friday Night Funkin' from here and enjoy.
 
 ## Why have you done this?
 We at the StepMania community didn't spend two decades writing charts with a
@@ -44,3 +46,6 @@ wade through click-to-place interfaces and BPM/sync woes.
   which does a lot of the initial heavy lifting.
 - [The Club Fantastic Team](https://clubfantastic.dance/) for the test
   materials.
+- [TaroNuke](https://www.twitch.tv/taronuke) and
+  [CHRS4LFE](https://www.twitch.tv/chrs4lfe), for being open-minded enough to
+  stream a bit of FNF and cause an intersection of the two communities.
