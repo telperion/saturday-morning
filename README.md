@@ -1,5 +1,5 @@
 # Saturday Morning Steppin'
-### StepMania simfile injector for Friday Night Funkin'
+Saturday Morning Steppin' is a StepMania simfile injector for Friday Night Funkin'.
 
 ![Sample interface snapshot](doc/sample.png)
 
