@@ -8,7 +8,7 @@ But it might make it easier for you to *create* new mods and share them!
 
 ## How to use!
 1. **Close Friday Night Funkin' before you begin replacing data.**
-1. Download the release and unzip to a directory of your choice.
+1. Download the [release](https://github.com/telperion/saturday-morning/releases) and unzip to a directory of your choice.
 1. Drag-and-drop a StepMania song folder onto SaturdayMorning.exe.
 1. Select the location of Funkin.exe in your Friday Night Funkin' install.
 1. Select the Friday Night Funkin' song to replace the files for.
