@@ -31,6 +31,7 @@ wade through click-to-place interfaces and BPM/sync woes.
 - [ArrowVortex](https://arrowvortex.ddrnl.com/)
 - [StepMania 5.3 "OutFox"](https://projectmoon.dance/)
 - [StepMania 5.1](https://github.com/stepmania/stepmania/releases)
+- [NotITG](https://notitg.heysora.net/)
 
 ## How to build!
 1. Install Python 3.8.
