@@ -37,6 +37,8 @@ wade through click-to-place interfaces and BPM/sync woes.
 1. Install Python 3.8.
 2. Install [pipenv](https://github.com/pypa/pipenv): `pip install pipenv`
 3. Set up the build environment: `pipenv install --dev`
+4. Run PyInstaller to build the executable: `pipenv run pyinstaller -w -F .\SaturdayMorning.py`
+5. Copy the `assets` directory into the `dist` directory.
 
 ## Shoutouts
 - [shockdude](https://github.com/shockdude/fnf-to-sm) and
