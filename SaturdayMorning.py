@@ -199,10 +199,13 @@ class SaturdayMorning(wx.Frame):
         if len(self.charts) > 0:
             slots_available = [s for s in self.charts]
             for i, s in enumerate(self.slots):
+                i_plr = len(self.slots) - i - 1
+                i_plr = max(i_plr, 0)
+                i_plr = min(i_plr, len(slots_available)-1)
                 self.c_slot_opp[s].Set(slots_available)
                 self.c_slot_opp[s].SetValue(slots_available[0])
                 self.c_slot_plr[s].Set(slots_available)
-                self.c_slot_plr[s].SetValue(slots_available[max(len(self.slots)-i-1, 0)])
+                self.c_slot_plr[s].SetValue(slots_available[i_plr])
 
 
     @except_decorator
@@ -210,7 +213,7 @@ class SaturdayMorning(wx.Frame):
         p = self.data['path']
         self.songlist = []
         if os.path.exists(p):
-            if os.path.exists(os.path.join(p, 'Funkin.exe')):
+            if os.path.exists(os.path.join(p, 'lime.ndll')):
                 p_sub = []
                 sl_sub = {}
 
@@ -223,7 +226,7 @@ class SaturdayMorning(wx.Frame):
 
                 self.songlist = [n for n in sl_sub['data'] if n in sl_sub['songs']]
             else:
-                raise ValueError(f"{os.path.join(p, 'Funkin.exe')} not found")
+                raise ValueError(f"{os.path.join(p, 'Funkin.exe')} (FNF executable) not found")
         else:
             raise ValueError(f"{p} not found")
 
@@ -516,7 +519,7 @@ if __name__ == '__main__':
 
     frame = None
     app = wx.App()
-    frame = SaturdayMorning(None, title="Saturday Morning Steppin' 0.1 (StepMania -> FNF)")
+    frame = SaturdayMorning(None, title="Saturday Morning Steppin' 0.2 (StepMania -> FNF)")
     frame.LoadSimfile(song_choice)
     frame.Show()
     app.MainLoop()
