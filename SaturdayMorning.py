@@ -66,6 +66,7 @@ class SaturdayMorning(wx.Frame):
         else:
             self.root = os.path.dirname(__file__)
 
+        self.itch = False       # Using the itch.io version's directory structure?
         self.slots = {'Easy': '-easy', 'Normal': '', 'Hard': '-hard'}
         self.data = {}
         self.songlist = []
@@ -474,7 +475,7 @@ class SaturdayMorning(wx.Frame):
 
         # Create full song JSON!
         display_bpm = int(timing_plr['bpms'][0][1])
-        song_name = self.c_song_choice.GetValue().replace('-', ' ').title()
+        song_name = self.c_song_choice.GetValue().title()
         song_dict = {
             'song': {
                 'song': song_name,              # injecting rather than adding a new song oops
@@ -519,7 +520,7 @@ if __name__ == '__main__':
 
     frame = None
     app = wx.App()
-    frame = SaturdayMorning(None, title="Saturday Morning Steppin' 0.2 (StepMania -> FNF)")
+    frame = SaturdayMorning(None, title="Saturday Morning Steppin' 0.3 (StepMania -> FNF)")
     frame.LoadSimfile(song_choice)
     frame.Show()
     app.MainLoop()
