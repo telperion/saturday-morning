@@ -599,7 +599,7 @@ if __name__ == '__main__':
     app = wx.App()
     frame = SaturdayMorning(None, title="Saturday Morning Steppin' 0.3 (StepMania -> FNF)")
     if len(sys.argv) > 1:
-        self.simfile = SaturdayMorning.CheckSimfile(sys.argv[1])
+        frame.simfile = SaturdayMorning.CheckSimfile(sys.argv[1])
         frame.LoadSimfile()
         frame.UpdateUI()
     frame.Show()
