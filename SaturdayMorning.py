@@ -77,13 +77,15 @@ class SaturdayMorning(wx.Frame):
         self.preload = 'assets/SaturdayMorning_defaults.json'
 
         self.LoadDefaults()
-        try:
+        if 'path' in self.data:
+            self.itch = SaturdayMorning.CheckFunkinEXE(self.data['path'])
             self.LoadSonglist()
-        except:
-            pass
-        self.InitUI()
-        self.UpdateUI()
-        self.Centre()
+            self.InitUI()
+            self.UpdateUI()
+            self.Centre()
+        else:
+            self.Close()
+
 
     @except_decorator
     def InitUI(self):
@@ -94,15 +96,18 @@ class SaturdayMorning(wx.Frame):
         f_yuge.SetPointSize(int(f_yuge.GetPointSize() * 1.5))
    
         p_song = wx.Panel(p_all)
-        self.l_song_source = wx.StaticText(p_song, label='', style=wx.ALIGN_CENTRE_HORIZONTAL)
+        self.l_song_source = wx.StaticText(p_song, label='[Select a simfile ->]', style=wx.ALIGN_CENTRE_HORIZONTAL)
         self.l_song_source.SetFont(f_yuge)
+        self.b_song_source = wx.Button(p_song)
+        self.b_song_source.SetBitmapLabel(wx.ArtProvider.GetBitmap(wx.ART_FOLDER))
         self.l_path_to_exe = wx.StaticText(p_song, label='Path to Funkin.exe:')
         self.t_path_to_exe = wx.TextCtrl(p_song, style=wx.TE_READONLY, size=(480, 24))
         self.b_path_to_exe = wx.Button(p_song)
         self.b_path_to_exe.SetBitmapLabel(wx.ArtProvider.GetBitmap(wx.ART_FOLDER))
         self.l_song_choice = wx.StaticText(p_song, label='Replace which song?')
         self.c_song_choice = wx.ComboBox(p_song, style=wx.CB_DROPDOWN | wx.CB_READONLY | wx.CB_SORT)
-        self.Bind(wx.EVT_BUTTON, self.LookupFunkinEXE, self.b_path_to_exe)
+        self.Bind(wx.EVT_BUTTON, self.OnNavigateFunkinEXE, self.b_path_to_exe)
+        self.Bind(wx.EVT_BUTTON, self.OnSelectSimfile, self.b_song_source)
         
         p_chart_mapping = wx.Panel(p_all)
         self.l_slot = {}
@@ -129,7 +134,8 @@ class SaturdayMorning(wx.Frame):
         ###
 
         sz_song = wx.GridBagSizer(6, 6)
-        sz_song.Add(self.l_song_source, pos=(0, 0), flag=wx.ALL | wx.EXPAND, span=(1, 3))
+        sz_song.Add(self.l_song_source, pos=(0, 0), flag=wx.ALL | wx.EXPAND, span=(1, 2))
+        sz_song.Add(self.b_song_source, pos=(0, 2), flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         sz_song.Add(self.l_path_to_exe, pos=(1, 0), flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         sz_song.Add(self.t_path_to_exe, pos=(1, 1), flag=wx.LEFT | wx.RIGHT | wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
         sz_song.Add(self.b_path_to_exe, pos=(1, 2), flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
@@ -192,8 +198,8 @@ class SaturdayMorning(wx.Frame):
 
     @except_decorator
     def UpdateUI(self):
-        self.l_song_source.SetLabel(self.name)
-        self.t_path_to_exe.SetLabel(self.data['path'])
+        self.l_song_source.SetLabel((len(self.name) > 0) and self.name or 'Select a simfile! ⇒')
+        self.t_path_to_exe.SetLabel(self.data['path'] + f" [{self.itch and 'itch.io' or 'KE'}]")
         if len(self.songlist) > 0:
             self.c_song_choice.Set(self.songlist)
             self.c_song_choice.SetValue(self.songlist[0])
@@ -218,61 +224,98 @@ class SaturdayMorning(wx.Frame):
                 p_sub = []
                 sl_sub = {}
 
-                for d_check in ['data', 'songs']:
-                    p_sub = os.path.join(p, 'assets', d_check)
-                    p_backup = os.path.join(p, '_backup', d_check)
-                    sl_sub[d_check] = [n for n in os.listdir(p_sub) if os.path.isdir(os.path.join(p_sub, n))]
-                    if not os.path.isdir(p_backup):
-                        shutil.copytree(p_sub, p_backup)
+                if self.itch:
+                    for d_check in ['data', 'music']:
+                        p_sub = os.path.join(p, 'assets', d_check)
+                        p_backup = os.path.join(p, '_backup', d_check)
+                        sl_sub[d_check] = [n for n in os.listdir(p_sub)]
+                        if not os.path.isdir(p_backup):
+                            shutil.copytree(p_sub, p_backup)
 
-                self.songlist = [n for n in sl_sub['data'] if n in sl_sub['songs']]
+                    self.songlist = [n for n in sl_sub['data'] if f"{n.title()}_Inst.ogg" in sl_sub['music']]
+                else: 
+                    for d_check in ['data', 'songs']:
+                        p_sub = os.path.join(p, 'assets', d_check)
+                        p_backup = os.path.join(p, '_backup', d_check)
+                        sl_sub[d_check] = [n for n in os.listdir(p_sub)]
+                        if not os.path.isdir(p_backup):
+                            shutil.copytree(p_sub, p_backup)
+
+                    self.songlist = [n for n in sl_sub['data'] if n in sl_sub['songs']]
             else:
                 raise ValueError(f"{os.path.join(p, 'Funkin.exe')} (FNF executable) not found")
         else:
-            raise ValueError(f"{p} not found")
+            raise ValueError(f'Friday Night Funkin\' path "{p}" not found')
+    
+
+    def SelectSimfile(self) -> int:
+        fdlg_simfile = wx.FileDialog(
+            self,
+            message='Select the simfile to copy charts from',
+            defaultDir=self.data.get('path', 'C:'),
+            wildcard="Stepmania 5+ simfile (*.ssc)|*.ssc|StepMania 3.95 simfile (*.sm)|*.sm",
+            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST            
+        )
+        result = fdlg_simfile.ShowModal()
+        if result == wx.ID_OK:
+            fn = fdlg_simfile.GetPath()
+            self.simfile = SaturdayMorning.CheckSimfile(fn)
+        return result
 
 
     @except_decorator
-    def LoadSimfile(self, song_directory):
-        if not os.path.isdir(song_directory):
-            # Accept drag/drop of a .sm or .ssc as well I guess
-            song_directory = os.path.dirname(song_directory)
+    def OnSelectSimfile(self, event):
+        if self.SelectSimfile() == wx.ID_OK:
+            self.LoadSimfile()
+            self.UpdateUI()
 
-        if os.path.exists(song_directory):
-            self.name = ''
-            self.charts = {}
 
+    @staticmethod
+    def CheckSimfile(fn):
+        if not os.path.exists(fn):
+            raise ValueError(f'Simfile or simfile directory does not exist: "{song_directory}"')
+
+        if os.path.isdir(fn):
+            # Accept drag/drop of a directory as well as a .sm or .ssc file
+            song_directory = fn
             chart_files = [n for n in os.listdir(song_directory) if os.path.splitext(n)[1] == '.ssc']
             if len(chart_files) == 0:
                 chart_files = [n for n in os.listdir(song_directory) if os.path.splitext(n)[1] == '.sm']
             if len(chart_files) == 0:
                 raise ValueError(f'No .sm or .ssc files found in "{song_directory}"')
-
-            audio_files = [n for n in os.listdir(song_directory) if os.path.splitext(n)[1] == '.ogg']
-            if len(audio_files) == 0:
-                raise ValueError(f'No .ogg files found in "{song_directory}"')
-
-            self.simfile = os.path.join(song_directory, chart_files[0])
-            any_chart_info = None
-            for chart_slot in ['Challenge', 'Hard', 'Medium', 'Easy', 'Beginner']:
-                try:
-                    parsed_chart, gimmick_data, chart_info = chart_util.ParseChartSM(self.simfile, chart_type='dance-single', chart_slot=chart_slot, shush=True)
-                    self.charts[chart_slot] = {
-                        'chart': parsed_chart,
-                        'gimmick': gimmick_data,
-                        'info': chart_info
-                    }
-                    if any_chart_info is None:
-                        any_chart_info = chart_info
-                    # print(f'Found a {chart_slot} chart in {chart_files[0]}')
-                except:
-                    pass
-                    # print(f'No {chart_slot} chart in {chart_files[0]}')
-            self.name = SaturdayMorning.BuildSongName(any_chart_info)
+            fn = os.path.join(song_directory, chart_files[0])
         else:
-            raise ValueError(f'"{song_directory}" not found')
+            if os.path.splitext(fn)[1] not in ['.ssc', '.sm']:
+                raise ValueError(f'The simfile provided did not have a .sm or .ssc extension: "{fn}"')
+            song_directory = os.path.dirname(fn)
 
-        self.UpdateUI()
+        audio_files = [n for n in os.listdir(song_directory) if os.path.splitext(n)[1] == '.ogg']
+        if len(audio_files) == 0:
+            raise ValueError(f'No .ogg files found in "{song_directory}" alongside simfile')
+
+        return fn
+
+
+    @except_decorator
+    def LoadSimfile(self):
+        self.name = ''
+        self.charts = {}
+        any_chart_info = None
+        for chart_slot in ['Challenge', 'Hard', 'Medium', 'Easy', 'Beginner']:
+            try:
+                parsed_chart, gimmick_data, chart_info = chart_util.ParseChartSM(self.simfile, chart_type='dance-single', chart_slot=chart_slot, shush=True)
+                self.charts[chart_slot] = {
+                    'chart': parsed_chart,
+                    'gimmick': gimmick_data,
+                    'info': chart_info
+                }
+                if any_chart_info is None:
+                    any_chart_info = chart_info
+                # print(f'Found a {chart_slot} chart in {chart_files[0]}')
+            except:
+                pass
+                # print(f'No {chart_slot} chart in {chart_files[0]}')
+        self.name = SaturdayMorning.BuildSongName(any_chart_info)
 
 
     @except_decorator
@@ -282,7 +325,14 @@ class SaturdayMorning(wx.Frame):
             with open(preload_resolved, 'r') as fp:
                 self.data = json.load(fp)
         if 'path' not in self.data:
-            self.data['path'] = r'C:/'
+            wx.MessageBox(
+                "The first time you run Saturday Morning Steppin',\nyou must provide the path to the Friday Night Funkin' install\nyou want to modify the songs in.",
+                caption='First time?',
+                style=wx.OK | wx.ICON_INFORMATION | wx.CENTRE,
+                parent=self
+            )
+            if self.LookupFunkinEXE() != wx.ID_OK:
+                raise ValueError("Must provide a valid path to a Friday Night Funkin' install to proceed.")
         if 'silence' not in self.data:
             self.data['silence'] = r'assets/silence.ogg'
         if 'speed' not in self.data:
@@ -298,20 +348,45 @@ class SaturdayMorning(wx.Frame):
 
 
     @except_decorator
-    def LookupFunkinEXE(self, event):
-        fdlg_funkin = wx.FileDialog(
-            self,
-            message='Select Funkin.exe in the game install that you want to replace songs from',
-            defaultDir=self.data['path'],
-            defaultFile='*.exe',
-            wildcard=".exe",
-            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST            
-        )
-        if fdlg_funkin.ShowModal() == wx.ID_OK:
-            self.data['path'] = os.path.dirname(fdlg_funkin.GetPath())
+    def OnNavigateFunkinEXE(self, event):
+        if self.LookupFunkinEXE() == wx.ID_OK:
             self.LoadSonglist()
             self.UpdateUI()
     
+
+    def LookupFunkinEXE(self) -> int:
+        fdlg_funkin = wx.FileDialog(
+            self,
+            message='Select Funkin.exe in the game install that you want to replace songs from',
+            defaultDir=self.data.get('path', 'C:'),
+            wildcard="Friday Night Funkin' executable (*.exe)|*.exe",
+            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST            
+        )
+        result = fdlg_funkin.ShowModal()
+        if result == wx.ID_OK:
+            p = os.path.dirname(fdlg_funkin.GetPath())
+            self.itch = SaturdayMorning.CheckFunkinEXE(p)
+            self.data['path'] = p
+        return result
+
+
+    @staticmethod
+    def CheckFunkinEXE(p) -> bool:
+        # Returns whether or not this install has an itch.io directory structure.
+        # Throws errors if it's not a valid install at all.
+        if not os.path.exists(p):
+            raise ValueError(f'Path to Funkin.exe does not exist: "{p}"')
+        if not os.path.exists(os.path.join(p, 'lime.ndll')):
+            raise ValueError(f'Path exists but does not appear to be a complete Friday Night Funkin\' install: "{p}"')
+        if not os.path.exists(os.path.join(p, 'assets', 'data')):
+            raise ValueError(f'Path to Funkin.exe exists but couldn\'t find the chart data subdirectory (/assets/data): "{p}"')
+        if os.path.exists(os.path.join(p, 'assets', 'songs')):
+            return False
+        elif os.path.exists(os.path.join(p, 'assets', 'music')):
+            return True
+        else:
+            raise ValueError(f'Path to Funkin.exe exists but couldn\'t find the song audio subdirectory (/assets/songs or /assets/music): "{p}"')
+
 
     @staticmethod
     def GetTimingEffects(gimmick_data):
@@ -509,18 +584,23 @@ class SaturdayMorning(wx.Frame):
             with open(os.path.join(path, 'assets/data', song, song + self.slots[s] + '.json'), 'w') as fp:
                 json.dump(song_dict, fp)
         shutil.copy2(self.simfile, os.path.join(path, 'assets/data', song, song + '-source' + os.path.splitext(self.simfile)[1]))
-        shutil.copy2(fn_audio, os.path.join(path, 'assets/songs', song, 'Inst.ogg'))
-        shutil.copy2(os.path.join(self.root, self.data['silence']), os.path.join(path, 'assets/songs', song, 'Voices.ogg'))
+        if self.itch:
+            shutil.copy2(fn_audio, os.path.join(path, 'assets/music', f'{song.title()}_Inst.ogg'))
+            shutil.copy2(os.path.join(self.root, self.data['silence']), os.path.join(path, 'assets/music', f'{song.title()}_Voices.ogg'))
+        else:
+            shutil.copy2(fn_audio, os.path.join(path, 'assets/songs', song, 'Inst.ogg'))
+            shutil.copy2(os.path.join(self.root, self.data['silence']), os.path.join(path, 'assets/songs', song, 'Voices.ogg'))
 
 
 if __name__ == '__main__':
-    song_test = '' #r'C:\Games\StepMania 5.3 Outfox\Songs\Club Fantastic Season 1\BOSSY'
     program_name = sys.argv[0]
-    song_choice = (len(sys.argv) > 1) and sys.argv[1] or song_test
-
+    
     frame = None
     app = wx.App()
     frame = SaturdayMorning(None, title="Saturday Morning Steppin' 0.3 (StepMania -> FNF)")
-    frame.LoadSimfile(song_choice)
+    if len(sys.argv) > 1:
+        self.simfile = SaturdayMorning.CheckSimfile(sys.argv[1])
+        frame.LoadSimfile()
+        frame.UpdateUI()
     frame.Show()
     app.MainLoop()
